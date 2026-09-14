@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>오늘 공부 플래너</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2c3e50; }
+    label { display: block; margin-top: 10px; }
+    textarea, input { width: 100%; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px; background: #3498db; color: white; border: none; cursor: pointer; }
+    button:hover { background: #2980b9; }
+    .result { margin-top: 20px; padding: 15px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>오늘 공부 플래너</h1>
+
+  <label>ㄱ. 공부해야 할 것 (예: 수학 문제집, 영어 숙제 등)</label>
+  <textarea id="tasks" rows="4" placeholder="각 항목을 줄바꿈으로 입력하세요"></textarea>
+
+  <label>ㄴ. 오늘 공부할 수 있는 시간 (예: 15, 15.5, 16 ... 30분 단위)</label>
+  <textarea id="times" rows="3" placeholder="예: 15, 15.5, 16, 16.5"></textarea>
+
+  <label>ㄷ. 각 공부 항목에 걸릴 예상 시간 (시간 단위, 항목 순서대로)</label>
+  <textarea id="durations" rows="3" placeholder="예: 1, 0.5, 2"></textarea>
+
+  <button onclick="generatePlan()">플래너 만들기</button>
+
+  <div class="result" id="condition"></div>
+  <div class="result" id="planner"></div>
+
+  <script>
+    function generatePlan() {
+      const tasks = document.getElementById('tasks').value.trim().split('\n');
+      const times = document.getElementById('times').value.trim().split(',').map(t => parseFloat(t));
+      const durations = document.getElementById('durations').value.trim().split(',').map(d => parseFloat(d));
+
+      // 총 공부 예상 시간
+      const totalStudyTime = durations.reduce((a, b) => a + b, 0);
+      const availableTime = times.length * 0.5; // 30분 단위
+
+      let conditionText = "";
+      if (totalStudyTime <= availableTime) {
+        conditionText = "오늘 공부 컨디션: 충분히 소화 가능 👍";
+      } else if (totalStudyTime <= availableTime + 1) {
+        conditionText = "오늘 공부 컨디션: 조금 빡빡하지만 가능 💪";
+      } else {
+        conditionText = "오늘 공부 컨디션: 계획 조정 필요 ⚠️";
+      }
+      document.getElementById('condition').innerText = conditionText;
+
+      // 플래너 생성
+      let plannerText = "오늘의 플래너:\n";
+      let timeIndex = 0;
+      for (let i = 0; i < tasks.length; i++) {
+        let duration = durations[i];
+        let slotsNeeded = Math.ceil(duration / 0.5);
+        let assignedSlots = [];
+        for (let j = 0; j < slotsNeeded && timeIndex < times.length; j++) {
+          assignedSlots.push(times[timeIndex]);
+          timeIndex++;
+        }
+        plannerText += `${tasks[i]} → ${assignedSlots.join(', ')}시\n`;
+      }
+      document.getElementById('planner').innerText = plannerText;
+    }
+  </script>
+</body>
+</html>
